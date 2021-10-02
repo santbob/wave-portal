@@ -9,12 +9,18 @@ contract WavePortal {
     // the seed used to generate random number
     uint256 private seed;
 
-    event NewWave(address indexed from, uint256 timestamp, string message);
+    event NewWave(
+        address indexed from,
+        uint256 timestamp,
+        string message,
+        bool winner
+    );
 
     struct Wave {
         address waver; // The address of the user who waved
         string message; // The message the user sent while waving
         uint256 timestamp; // The timestamp when the user waved
+        bool winner; // A boolean denoting did that wave win
     }
 
     Wave[] waves;
@@ -30,20 +36,13 @@ contract WavePortal {
 
     function wave(string memory _message) public {
         require(
-            lastWavedAt[msg.sender] + 15 minutes < block.timestamp,
-            "Wait 15 mins"
+            lastWavedAt[msg.sender] + 30 seconds < block.timestamp,
+            "Wait 30 seconds"
         );
 
         lastWavedAt[msg.sender] = block.timestamp;
 
         totalWaves += 1;
-        waves.push(
-            Wave({
-                waver: msg.sender,
-                timestamp: block.timestamp,
-                message: _message
-            })
-        );
 
         // generate psuedo random number between 0 and 100
         uint256 randomNumber = (block.difficulty + block.timestamp + seed) %
@@ -53,7 +52,9 @@ contract WavePortal {
         // updating the seed to randomNumber to make the seed random for next execution of the block
         seed = randomNumber;
 
+        bool winner = false;
         if (randomNumber < 50) {
+            winner = true;
             console.log("%s won!", msg.sender);
 
             uint256 prizeAmount = 0.0001 ether;
@@ -67,7 +68,16 @@ contract WavePortal {
             require(success, "Failed to withdraw money from contract");
         }
 
-        emit NewWave(msg.sender, block.timestamp, _message);
+        waves.push(
+            Wave({
+                waver: msg.sender,
+                timestamp: block.timestamp,
+                message: _message,
+                winner: winner
+            })
+        );
+
+        emit NewWave(msg.sender, block.timestamp, _message, winner);
         console.log("%s has waved ", msg.sender);
     }
 

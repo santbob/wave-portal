@@ -49,6 +49,9 @@ async function main() {
     .wave('Veru oruvanin vazhthu 1');
   await waveTxn.wait();
 
+  let allWaves = await waveContract.getAllWaves();
+  console.log('All waves:', allWaves);
+
   waveTxn = await waveContract
     .connect(randoPerson)
     .wave('Veru oruvanin vazhthu 2');
@@ -64,7 +67,7 @@ async function main() {
   waveCount = await waveContract.getTotalWaves();
   console.log('Total waves:', waveCount);
 
-  let allWaves = await waveContract.getAllWaves();
+  allWaves = await waveContract.getAllWaves();
   console.log('All waves:', allWaves);
 }
 
